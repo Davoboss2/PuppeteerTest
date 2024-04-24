@@ -41,15 +41,15 @@ const puppeteer_extra_1 = __importDefault(require("puppeteer-extra"));
 const puppeteer_extra_plugin_stealth_1 = __importDefault(require("puppeteer-extra-plugin-stealth"));
 puppeteer_extra_1.default.use((0, puppeteer_extra_plugin_stealth_1.default)());
 const file = fs.createWriteStream("./test.webm");
-const html = fs.createWriteStream("./test.html");
 (() => __awaiter(void 0, void 0, void 0, function* () {
     // Launch the browser and open a new blank page
-    const browser = yield (0, puppeteer_stream_1.launch)(puppeteer_extra_1.default, {
+    const browser = yield (0, puppeteer_stream_1.launch)({
+        executablePath: puppeteer_extra_1.default.executablePath(),
         args: [
             '--no-sandbox',
             '--start-fullscreen',
             '--disable-gpu',
-            `--window-size=${700},${700}`,
+            `--window-size=${1280},${780}`,
             '--disable-setuid-sandbox',
             `--ozone-override-screen-size=${700},${700}`,
             '--headless=new',
@@ -59,7 +59,7 @@ const html = fs.createWriteStream("./test.html");
         // userDataDir: '.',
     });
     const page = yield browser.newPage();
-    yield page.goto('https://app.zoom.us/wc/join/82945776470?fromPWA=1&pwd=OuGeZPYkJlNme31x9ATLokxfayyLzU.1');
+    yield page.goto('https://app.zoom.us/wc/join/89487262342?fromPWA=1');
     page.on('console', (msg) => __awaiter(void 0, void 0, void 0, function* () {
         const msgArgs = msg.args();
         for (let i = 0; i < msgArgs.length; ++i) {
@@ -70,11 +70,21 @@ const html = fs.createWriteStream("./test.html");
     console.log("Recording Started");
     stream.pipe(file);
     console.log("Before start");
-    yield new Promise(resolve => setTimeout(resolve, 5000));
-    let content = yield page.content();
-    html.write(content);
-    html.close();
-    yield page.locator('//button[text()="Continue"]').click();
+    yield new Promise(resolve => setTimeout(resolve, 15000));
+    const frame = yield page.$('iframe');
+    console.log(frame);
+    const framecontent = yield (frame === null || frame === void 0 ? void 0 : frame.contentFrame());
+    console.log("content frame");
+    const t = yield (framecontent === null || framecontent === void 0 ? void 0 : framecontent.$$("button"));
+    if (t) {
+        t[0].click();
+    }
+    t === null || t === void 0 ? void 0 : t.map((i) => {
+        i.evaluate((i) => {
+            console.log(i.textContent);
+        });
+    });
+    console.log(t);
     yield new Promise(resolve => setTimeout(resolve, 10000));
     yield page.screenshot({ path: `./screenshot.jpg` });
     yield stream.destroy();
